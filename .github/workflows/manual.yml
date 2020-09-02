@@ -36,4 +36,4 @@ jobs:
     - uses: actions/checkout@v2
       
     - name: Build the image
-      run: ~/.local/bin/cekit build docker      
+      run: sudo ~/.local/bin/cekit build docker      
