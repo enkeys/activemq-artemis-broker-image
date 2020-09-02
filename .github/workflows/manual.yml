@@ -27,10 +27,13 @@ jobs:
     steps:
     - name: Install prerequisites
       run: sudo apt-get install gcc libkrb5-dev python-dev python-docker
+    - name: Install docker-squash
+      run: sudo pip install docker-squash
     - name: Install CEKit
       run: sudo pip install -U cekit --user
     - name: Install ODCS
       run: sudo pip install odcs[client]
+      
 
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
