@@ -25,9 +25,11 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    - name: Install prerequisites
+      run: sudo apt-get install gcc libkrb5-dev python-dev python-docker python3-docker-squash
     - name: Install CEKit
       run: sudo pip install -U cekit --user
-    - name: Install libkrb5
-      run: sudo apt-get install gcc python-dev libkrb5-dev
     - name: Install ODCS
       run: sudo pip install odcs[client]
+    - name: Build the image
+      run: cekit build docker
