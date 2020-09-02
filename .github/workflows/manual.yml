@@ -34,4 +34,4 @@ jobs:
     - uses: actions/checkout@v2
       
     - name: Build the image
-      run: cekit build docker      
+      run: cekit --verbose build docker
