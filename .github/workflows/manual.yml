@@ -25,6 +25,7 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-    # Runs a single command using the runners shell
-    - name: Install pip
+    - name: Install CEKit
       run: sudo pip install -U cekit --user
+    - name: Install ODCS
+      run: sudo pip install odcs[client]
