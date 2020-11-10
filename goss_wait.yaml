@@ -1,0 +1,6 @@
+---
+port:
+  tcp:61616:
+    listening: true
+  tcp:8161:
+    listening: true
