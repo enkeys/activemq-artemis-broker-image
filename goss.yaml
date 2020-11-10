@@ -1,0 +1,106 @@
+---
+port:
+  tcp:1883:
+    listening: true
+  tcp:5672:
+    listening: true
+  tcp:8161:
+    listening: true
+
+http:
+  http://{{getEnv "IP_ADDR"}}:8161:
+    status: 200
+    timeout: 500
+    body:
+      - {{getEnv "WEB_MSG"}}
+
+  http://{{getEnv "IP_ADDR"}}:8161/console/login:
+    status: 200
+    timeout: 500
+    body:
+      - Username
+
+  http://{{getEnv "IP_ADDR"}}:8161/api/index.html:
+    status: 200
+    timeout: 500
+    body:
+      - 'ActiveMQ Artemis Web {{getEnv "BROKER_VERSION2"}} API'
+
+  http://{{getEnv "IP_ADDR"}}:8161/user-manual/index.html:
+    status: {{getEnv "WEB_USER_MANUAL_CODE"}}
+    timeout: 500
+    body:
+      - {{getEnv "WEB_USER_MANUAL_MSG"}}
+
+  http://{{getEnv "IP_ADDR"}}:8161/hacking-guide/index.html:
+    status: {{getEnv "WEB_HACKING_CODE"}}
+    timeout: 500
+    body:
+      - {{getEnv "WEB_HACKING_MSG"}}
+
+  http://{{getEnv "IP_ADDR"}}:8161/migration-guide/index.html:
+    status: {{getEnv "WEB_MIGRATION_GUIDE_CODE"}}
+    timeout: 500
+    body:
+      - {{getEnv "WEB_MIGRATION_GUIDE_MSG"}}
+
+  http://{{getEnv "IP_ADDR"}}:8161/examples/index.html:
+    status: 200
+    timeout: 500
+    body:
+      - 'Apache ActiveMQ Artemis Examples'
+
+command:
+  produce_browse_consume:
+    exec: '{{getEnv "ARTEMIS_CMD"}} check queue --name TEST --produce 1000 --browse 1000 --consume 1000 --user {{getEnv "USER"}} --password {{getEnv "PASSWORD"}} --url tcp://172.18.0.66:61616'
+    exit-status: 0
+
+  jolokia_mbean_list:
+    exec: 'curl -k --user amq:amq -H "Origin: http://{{getEnv "IP_ADDR"}}:8161" "http://{{getEnv "IP_ADDR"}}:8161/console/jolokia/list"'
+    exit-status: 0
+    stdout:
+      - "org.apache.activemq.artemis"
+
+  version:
+    exec: 'curl -k --user {{getEnv "USER"}}:{{getEnv "PASSWORD"}} -H "Origin: http://{{getEnv "IP_ADDR"}}:8161" "http://{{getEnv "IP_ADDR"}}:8161/console/jolokia/read/org.apache.activemq.artemis:broker=%22{{getEnv "BROKER_NAME"}}%22/Version"'
+    exit-status: 0
+    stdout:
+      - '"value":"{{getEnv "BROKER_VERSION"}}"'
+
+file:
+  /home/jboss/broker/log/artemis.log:
+    exists: true
+    contains:
+      - 'AMQ101000: Starting ActiveMQ Artemis Server'
+      - 'AMQ221012: Using AIO Journal'
+      - 'AMQ221043: Protocol module found: [artemis-server]'
+      - 'AMQ221043: Protocol module found: [artemis-amqp-protocol]'
+      - 'AMQ221043: Protocol module found: [artemis-hornetq-protocol]'
+      - 'AMQ221043: Protocol module found: [artemis-mqtt-protocol]'
+      - 'AMQ221043: Protocol module found: [artemis-openwire-protocol]'
+      - 'AMQ221043: Protocol module found: [artemis-stomp-protocol]'
+      - 'AMQ221034: Waiting indefinitely to obtain live lock'
+      - 'AMQ221035: Live Server Obtained live lock'
+      - 'AMQ221080: Deploying address DLQ supporting [ANYCAST]'
+      - 'AMQ221003: Deploying ANYCAST queue DLQ on address DLQ'
+      - 'AMQ221080: Deploying address ExpiryQueue supporting [ANYCAST]'
+      - 'AMQ221003: Deploying ANYCAST queue ExpiryQueue on address ExpiryQueue'
+      - 'AMQ221020: Started EPOLL Acceptor at {{getEnv "IP_ADDR"}}:61616 for protocols [CORE,MQTT,AMQP,STOMP,HORNETQ,OPENWIRE]'
+      - 'AMQ221020: Started EPOLL Acceptor at {{getEnv "IP_ADDR"}}:5445 for protocols [HORNETQ,STOMP]'
+      - 'AMQ221020: Started EPOLL Acceptor at {{getEnv "IP_ADDR"}}:5672 for protocols [AMQP]'
+      - 'AMQ221020: Started EPOLL Acceptor at {{getEnv "IP_ADDR"}}:1883 for protocols [MQTT]'
+      - 'AMQ221020: Started EPOLL Acceptor at {{getEnv "IP_ADDR"}}:61613 for protocols [STOMP]'
+      - 'AMQ221007: Server is now live'
+      - 'AMQ221001: Apache ActiveMQ Artemis Message Broker version {{getEnv "BROKER_VERSION"}}'
+      - 'Initialized {{getEnv "BRANDING_PLUGIN"}} plugin'
+      - 'Initialized artemis-plugin plugin'
+      - 'Configuration will be discovered via system properties'
+      - 'Welcome to hawtio {{getEnv "HAWTIO_VERSION"}}'
+      - 'Using file upload directory: {{getEnv "ARTEMIS_INSTANCE_PATH"}}/tmp/uploads'
+      - 'Starting hawtio authentication filter, JAAS realm: "activemq" authorized role(s): "admin" role principal classes: "org.apache.activemq.artemis.spi.core.security.jaas.RolePrincipal"'
+      - 'Jolokia overridden property: [key=policyLocation, value=file:{{getEnv "ARTEMIS_INSTANCE_PATH"}}/etc/jolokia-access.xml]'
+      - 'Using MBean [hawtio:type=security,area=jmx,rank=0,name=HawtioDummyJMXSecurity] for role based access control'
+      - 'Initial proxy whitelist: [localhost, 127.0.0.1, {{getEnv "IP_ADDR"}}'
+      - 'AMQ241001: HTTP Server started at http://{{getEnv "IP_ADDR"}}:8161'
+      - 'AMQ241002: Artemis Jolokia REST API available at http://{{getEnv "IP_ADDR"}}:8161/console/jolokia'
+      - 'AMQ241004: Artemis Console available at http://{{getEnv "IP_ADDR"}}:8161/console'

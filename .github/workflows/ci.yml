@@ -18,7 +18,11 @@ jobs:
       - name: Install prerequisites
         run: >
           sudo apt-get install gcc libkrb5-dev pass &&
-          sudo pip install docker docker-squash cekit odcs[client]        
+          sudo pip install docker docker-squash cekit odcs[client] &&
+          sudo curl -L https://github.com/aelsabbahy/goss/releases/latest/download/goss-linux-amd64 -o /usr/local/bin/goss  &&
+          sudo chmod +rx /usr/local/bin/goss &&
+          sudo curl -L https://github.com/aelsabbahy/goss/releases/latest/download/dgoss -o /usr/local/bin/dgoss &&
+          sudo chmod +rx /usr/local/bin/dgoss
 
       - name: Checkout the repo
         uses: actions/checkout@v2
@@ -26,15 +30,8 @@ jobs:
       - name: Build the image
         run: "cekit --verbose build --overrides \"{'labels': [{'name': 'quay.expires-after', 'value': '1w'}, {'name': 'git-sha', 'value': '$GITHUB_SHA'}]}\" docker --tag $IMAGE_NAME:latest"
 
-      - name: Check the image
-        run: >
-          export CONTAINER_ID=$(docker run --detach --env AMQ_USER=admin --env AMQ_PASSWORD=admin $IMAGE_NAME:latest) &&
-          echo CONTAINER_ID=$CONTAINER_ID && sleep 3 &&
-          export CONTAINER_IP=$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $CONTAINER_ID) &&
-          echo CONTAINER_IP=$CONTAINER_IP &&
-          docker cp $CONTAINER_ID:/opt/amq ./ &&
-          ./amq/bin/artemis check queue --name TEST --produce 1000 --browse 1000 --consume 1000 --user admin --password admin --url tcp://$CONTAINER_IP:61616 &&
-          docker kill $CONTAINER_ID
+      - name: Test the image
+        run: "make configure dgoss-validate-ci"
 
       - name: Push the image
         if: ${{ github.event_name == 'push' }}
